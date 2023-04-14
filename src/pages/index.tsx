@@ -64,7 +64,25 @@ export default function HomePage() {
                 canvasRef?.current
                   ?.exportImage("png")
                   .then((data) => {
-                    console.log(data)
+                    // post to api route /upload
+                    fetch("/api/upload", {
+                      method: "POST",
+                      body: JSON.stringify({
+                        good: isGood,
+                        data,
+                      }),
+                    })
+                      .then((res) => {
+                        if (res.status === 200) {
+                          console.log("Success")
+                        }
+                      })
+                      .catch((e) => {
+                        console.error("Error", e)
+                      })
+                      .finally(() => {
+                        canvasRef?.current?.clearCanvas()
+                      })
                   })
                   .catch((e) => {
                     console.log(e)
