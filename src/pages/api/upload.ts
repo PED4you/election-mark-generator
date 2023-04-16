@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next"
 
 import AWS from "aws-sdk"
 
+import getDb from "@/lib/firebase-admin"
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // data is in base64
   const { good, data: base64Data } = JSON.parse(req.body)
@@ -33,8 +35,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error(err)
       res.status(500).json({ error: err })
     } else {
-      console.log(data.Location)
-      res.status(200).json({ name: data.Location })
+      const db = getDb()
+
+      const imageData = {
+        url: data.Location,
+        isGood: good,
+        createdAt: new Date().toISOString(),
+        name: `${good ? "good" : "bad"}-${filename}`,
+      }
+
+      db.collection("images")
+        .doc(`${good ? "good" : "bad"}-${filename}`)
+        .set(imageData)
+
+      res.status(200).json({ data: imageData })
     }
   })
 }
